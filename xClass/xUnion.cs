@@ -575,7 +575,7 @@ namespace Nuwa.xClass
         public void  CreatePlateActor()
         {
             vtkPNGReader pngReader = vtkPNGReader.New();
-            pngReader.SetFileName(""..\\..\\..\\Resources\\cb.png"");//读入纹理图
+            pngReader.SetFileName("..\\Resources\\cb.png);//读入纹理图
             vtkTexture texture = vtkTexture.New();
             texture.SetInputConnection(pngReader.GetOutputPort());
             texture.InterpolateOn();
