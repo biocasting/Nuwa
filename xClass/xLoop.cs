@@ -11,37 +11,43 @@
 */
 using System;
 using System.Collections.Generic;
+using ClipperLib;
 
 namespace Nuwa.xClass
 {
     using Points = List<xPoint2>;
-
+    using Polygon = List<IntPoint>;
     public class xLoopNode
     {
-        /// <summary>
-        /// 成员变量
-        /// 线段的头点head和尾点tail,以及线段的Id  (head) ---> (tail)
-        /// </summary>
+        #region 成员
         private xPoint2 pt;
         private int headPtId;
         private int tailPtId;
         public int id;
         public bool isLoopHead;
         public bool isVisited;
+        #endregion
 
-        /// <summary>
-        /// 属性:  xLoopNode线段的XYZ，Id指的是head点的XYZ.,Id
-        /// </summary>
+        #region 属性
         public double X
         {
             get { return this.pt.X; }
             set { this.pt.X = value; }
         }
-
+        public long XL
+        {
+            get { return this.pt.XL; }
+            set { this.pt.XL = value; }
+        }
         public double Y
         {
             get { return this.pt.Y; }
             set { this.pt.Y = value; }
+        }
+        public long YL
+        {
+            get { return this.pt.YL; }
+            set { this.pt.YL = value; }
         }
 
         public int Id
@@ -61,11 +67,10 @@ namespace Nuwa.xClass
             get { return this.tailPtId; }
             set { this.tailPtId = value; }
         }
-        /// <summary>
-        /// xLoopNode构造函数，初始化所包含的一个点
-        /// </summary>
-        /// <param name=""></param>
-        /// <returns></returns>
+
+        #endregion
+
+        #region 构造函数
         public xLoopNode()
         {
             this.pt = new xPoint2(0.0, 0.0);
@@ -81,73 +86,81 @@ namespace Nuwa.xClass
             this.pt = p;
         }
 
+        #endregion
     }
     public class xLoop
     {
-        /// <summary>
-        /// 成员:  包含loop所有点的List 以及,Loop的Id，
-        /// 以及判断这个Loop是最外面的Loop（True）还是里面的Loop（False）的参数
-        /// </summary>
+        #region 成员
         private Points points;
+        private Polygon polygon = new Polygon();
         public bool isOuterLoop;
         private int  id;
+
+        //最大最小值
         private int indexOfTop = 0, indexOfBottom = 0, indexOfLeft = 0, indexOfRight = 0;
         private double maxX = double.MinValue, maxY = double.MinValue, minX = double.MaxValue, minY = double.MaxValue;
-        
-        /// <summary>
-        /// Points(List)的中xPoint2D点的数量
-        /// </summary>
+        #endregion
+
+        #region 属性
         public int NumberOfPoints
         {
             get { return this.points.Count; }
         }
-        /// <summary>
-        /// 返回Points(List)的位置为i的xPoint点，注意i不能大于xPoint点总数。
-        /// </summary>
-        public xPoint2 GetPointAt(int i)
+
+        public int NumberOfIntPoints
         {
-            return this.points[i];
+            get { return this.polygon.Count; }
         }
 
-        /// <summary>
-        /// 属性:  Loop的Id
-        /// </summary>
         public int Id
         {
             get { return this.id; }
             set { this.id = value; }
         }
 
-        /// <summary>
-        /// 构造函数，所有属性初始化为0
-        /// </summary>
+        public Polygon Polygon
+        {
+            get { ClosePolygon(); return this.polygon; }
+            set { this.polygon = value; }
+        }
+
+        public void ClosePolygon()
+        {
+            if (this.NumberOfIntPoints < 2)
+                return;
+            if (this.polygon[0] != this.polygon[this.NumberOfIntPoints - 1])
+                this.polygon.Add(new IntPoint(this.polygon[0].X, this.polygon[0].Y));
+        }
+
+
+        #endregion
+
+        #region 构造函数
         public xLoop()
         {
             id = 0;
             isOuterLoop = true;
             points = new List<xPoint2>();
         }
-        /// <summary>
-        /// 在Points的List中增加一个点
-        /// </summary>
-        public void AddPoint (xPoint2  p)
+        #endregion
+
+        public void AddPoint (xPoint2  point)
         {
-            points.Add(p);
-        }
-        /// <summary>
-        /// 在Points(List)中增加一个坐标为XYZ的xPoint2D点
-        /// </summary>
-        public void AddPoint (double  x, double  y)
-        {
-            xPoint2  p = new xPoint2 (x, y);
-            points.Add(p);
+            this.points.Add(point);
+            IntPoint pt = new IntPoint(point.XL, point.YL);
+            this.polygon.Add(pt);
         }
 
-        public void AddPoints(xPoint2[] ps)
+        public void AddPoints(xPoint2[] points)
         {
-            points.AddRange(ps);
+            this.points.AddRange(points);
         }
 
+        public xPoint2 GetPointAt(int i)
+        {
+            return this.points[i];
+        }
+       
         public xPoint2[] ToArray()
         {
             return this.points.ToArray();
@@ -226,9 +239,6 @@ namespace Nuwa.xClass
             this.points = pts;
         }
 
-        /// <summary>
-        /// 检查xy组成的点是否在loop内
-        /// </summary>
         public int  ptInLoop(double  x, double  y)
         {
             int  i;
@@ -245,6 +255,13 @@ namespace Nuwa.xClass
             return  o;
         }
 
-
+       public void FillWithPolygon()
+        {
+           foreach (IntPoint intPoint in this.polygon)
+           {
+               xPoint2 point = new xPoint2(intPoint.X,intPoint.Y);
+               this.points.Add(point);
+           }
+        }
     }
 }

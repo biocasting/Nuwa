@@ -12,7 +12,8 @@ namespace Nuwa.xClass
         // 用于排序和拓扑关系Id
         int id = 0;
         //Double转换为Long的精确度
-        private const double PRECISION = 1000; 
+        private const double PRECISION = 1000;
+        private const double THRESHOLD = 1E-8; 
 
         #endregion 
 
@@ -39,13 +40,13 @@ namespace Nuwa.xClass
         /// </summary>
         public long XL
         {
-            get { return Convert.ToInt64(this.x * PRECISION + 0.5d); }
+            get { return Convert.ToInt64(this.x * PRECISION ); }
             set { this.y = Convert.ToDouble(value / PRECISION); }
         }
 
         public long YL
         {
-            get { return Convert.ToInt64(this.y*PRECISION + 0.5d) ; }
+            get { return Convert.ToInt64(this.y*PRECISION ) ; }
             set { this.y = Convert.ToDouble(value / PRECISION); }
         }
 
@@ -69,6 +70,9 @@ namespace Nuwa.xClass
             this.x = x;
             this.y = y;
         }
+
+
+
 
         ///// <summary>
         /////   方法： 通过设置X,Y坐标的float值得到点
@@ -116,7 +120,7 @@ namespace Nuwa.xClass
         /// </summary>
         public bool Equals(xPoint2 other)
         {
-            return this.x == other.X && this.y == other.Y;
+            return this.x - other.X < THRESHOLD  && this.y - other.Y < THRESHOLD;
         }
 
         /// <summary>
@@ -128,12 +132,30 @@ namespace Nuwa.xClass
         }
 
         /// <summary>
+        ///  方法： 得到这个点的拷贝，而非引用
+        /// </summary>
+        public void Copy(xPoint2 other)
+        {
+            this.x=other.X; this.y=other.Y;
+        }
+
+        /// <summary>
+        ///  方法： 得到这个点的拷贝，而非引用
+        /// </summary>
+        public xPoint2 Offset(double x, double y)
+        {
+            return new xPoint2(this.x+ x, this.y +y);
+        }
+
+
+        /// <summary>
         ///  方法： 输出此点坐标的文字
         /// </summary>
         public override string ToString()
         {
-            return "[" + this.x.ToString() + "," + this.y.ToString() + "]";
+            return  this.x.ToString("f3") + "," + this.y.ToString("f3") ;
         }
+
 
     }
 

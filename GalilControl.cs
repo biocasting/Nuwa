@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ToothFairy
+namespace Nuwa
 {
-    class GalilControl
+    public class GalilControl
     {
 
         #region 成员
@@ -31,7 +31,7 @@ namespace ToothFairy
         private bool isGalilConnected = false;
         private double jogSpeed = 0, moveSpeed = 0, moveDistance = 0;
         private string jogAxis = "";
-        private System.Windows.Forms.Label timeLabel = null;
+        private System.Windows.Forms.ToolStripLabel timeLabel = null;
 
         #endregion
 
@@ -157,7 +157,7 @@ namespace ToothFairy
             get { return this.response; }
         }
 
-        public System.Windows.Forms.Label TimeLabel
+        public System.Windows.Forms.ToolStripLabel TimeLabel
         {
             set { this.timeLabel = value; }
         }
@@ -487,6 +487,61 @@ namespace ToothFairy
             }
         } //定义当前位置为零点。。。。
 
+        public void SetAxisToZero(int index)
+        {
+            try
+            {
+                switch (index)
+                {
+                    case 0:
+                        response = g.command("DP 0");
+                        this.machinePosition[0] += this.commandPosition[0];
+                        break;
+                    case 1:
+                        response = g.command("DP ,0");
+                        this.machinePosition[1] += this.commandPosition[1];
+                        break;
+                    case 2:
+                        response = g.command("DP ,,0");
+                        this.machinePosition[2] += this.commandPosition[2];
+                        break;
+                    case 3:
+                        response = g.command("DP ,,,0");
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response = "错误: " + ex.Message;
+            }
+        } //定义当前位置为零点。。。。
+
+        public void MoveAxisToZero(int index)
+        {
+            try
+            {
+                switch (index)
+                {
+                    case 0:
+                        Move("X", 10, -1*this.X);
+                        break;
+                    case 1:
+                        Move("Y", 10, -1 * this.Y);
+                        break;
+                    case 2:
+                        Move("Z", 10, -1 * this.Z);
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response = "错误: " + ex.Message;
+            }
+        } //定义当前位置为零点。。。。
+
+
         public void HomeXYZ()
         {
             try
@@ -601,42 +656,23 @@ namespace ToothFairy
                 return;
             try
             {
-                    if (line.StartsWith("CS"))
-                    {
-                        g.command(line);
-                    }
-                    else if (line.StartsWith("REM"))
+                    if (line.StartsWith("REM"))
                     {
                         //g.command(line);
-                    }
-                    else if (line.StartsWith("VM"))
-                    {
-                        g.command(line);
-                    }
-                    else if (line.StartsWith("LM"))
-                    {
-                        g.command(line);
                     }
                     else if (line.StartsWith("VP"))
                     {
                         DMCWaitBufferReady();
                         g.command(line);
                     }
-                    else if (line.StartsWith("BG"))
+                    else if (line.StartsWith("CR"))
                     {
+                        DMCWaitBufferReady();
                         g.command(line);
                     }
                     else if (line.StartsWith("LI"))
                     {
                         DMCWaitBufferReady();
-                        g.command(line);
-                    }
-                    else if (line.StartsWith("VE"))
-                    {
-                        g.command(line);
-                    }
-                    else if (line.Contains("LE"))
-                    {
                         g.command(line);
                     }
                     else if (line.Contains("AMS"))
@@ -646,10 +682,6 @@ namespace ToothFairy
                     else if (line.Contains("AMC"))
                     {
                         DMCWaitMotionComplete("C");
-                    }
-                    else if (line.Contains("ST"))
-                    {
-                        g.command(line);
                     }
                     else if (line.StartsWith("EN"))
                     {

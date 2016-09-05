@@ -31,44 +31,29 @@ namespace Nuwa.xClass
     {
         #region 成员
 
-        /// <summary>
-        /// 实施Module
-        /// </summary>
         // 主显示窗口，需要从mainform传递地址
         private RenderWindowControl renderWindowControl;
         public vtkCamera cam;
         private vtkPropPicker picker;
-
-        /// <summary>
-        /// 主Module
-        /// </summary>
-        // 对象
+        // 主显示物件
         private List<xModule> objects;
-        // 每层
         private List<xModule2> slices;
-        //整体
-
-        /// <summary>
-        /// 辅助Module
-        /// </summary>
-        // 模拟打印平台
+        // 辅助物件
         private xModule plate;
-        // 模拟打印头笔尖
-
         private xModule pen;
-        // 尺寸坐标系
         public vtkCubeAxesActor axes;
 
         // 辅助数据 
         public double[] firstPoint = { 0, 0, 0 };
-        private double[] bounds;
+        private double[] bounds = { 0, 0, 0, 0, 0, 0 };
         private double[] lastbounds = { 0, 250, 0, 200, 0, 100 };
-        private double[] boundsDefault = {0,250,0,200,0,100};
-        private double[] center;
-        vtkActor LastPickedActor = null;
+        private double[] boundsDefault = { 0, 250, 0, 200, 0, 100 };
+        
+        // 鼠标选择
+        public vtkActor LastPickedActor = null;
+        public vtkProperty LastPickedProperty;
+        private int selectedModuleIndex = -1;
         bool justpicked = false;
-        vtkProperty LastPickedProperty = vtkProperty.New();
-        System.Windows.Forms.TreeView  tvUnit = null;
 
         #endregion 成员
 
@@ -80,30 +65,6 @@ namespace Nuwa.xClass
             {
                 return bounds;
             }
-            //set (  ;)
-        }
-
-        public double Width
-        {
-            get { return Math.Abs(Bounds[1] - Bounds[0]); }
-            //set (  ;)
-        }
-
-        public double Height
-        {
-            get { return Math.Abs(Bounds[3] - Bounds[2]); }
-            //set (  ;)
-        }
-
-        public double Depth
-        {
-            get { return Math.Abs(Bounds[5] - Bounds[4]); }
-            //set (  ;)
-        }
-
-        public double[] Center
-        {
-            get { return center; }
             //set (  ;)
         }
 
@@ -121,15 +82,13 @@ namespace Nuwa.xClass
 
         public int NumberOfLayers
         {
-            get { return Path.SlcZList.Count; }
+            get { return xPath.SlcZList.Count; }
             //set (  ;)
         }
 
-
-        public void Initialize()
+        public int SelectedModuleIndex
         {
-            AxesUpdate(boundsDefault);
-            SetCamera(0, -1, 0, 0, 0, 1);
+            get { return this.selectedModuleIndex; }
         }
 
         public vtkRenderWindow RenWin
@@ -152,11 +111,6 @@ namespace Nuwa.xClass
             set { this.renderWindowControl = value; }
         }
 
-        public System.Windows.Forms.TreeView TreeView
-        {
-            set { this.tvUnit = value; }
-        }
-
         #endregion 属性
 
         /// <summary>
@@ -164,23 +118,15 @@ namespace Nuwa.xClass
         /// </summary>
         public xUnion()
         {
-            // vtk 元素
             this.picker = vtkPropPicker.New();
             this.axes = vtkCubeAxesActor.New();
             this.cam = vtkCamera.New();
-
-
-            // VTK 物体
-
+            this.LastPickedProperty = vtkProperty.New();
             this.objects = new List<xModule>();
             this.slices = new List<xModule2>();
             this.plate = new xModule();
             this.pen = new xModule();
-
-            this.bounds = new double[6] { 0, 0, 0, 0, 0, 0 };
-            this.center = new double[3] { 0, 0, 0 };
         }
-
         /// <summary>
         ///  解构函数
         /// </summary>
@@ -194,14 +140,13 @@ namespace Nuwa.xClass
             {
                 m.Dispose();
             }
-            DelAllObjects();
-            DelAllSlices();
+            RemoveAllObjects();
+            RemoveAllSlices();
         }
-
         public void SetUpScene()
         {
             //灰色背景
-            Ren.SetBackground(0.2,0.2, 0.2);
+            Ren.SetBackground(0.2, 0.2, 0.2);
             // 加入box
             CreatePlateActor();
             CreatePenActor();
@@ -210,21 +155,17 @@ namespace Nuwa.xClass
             //// interact
             Iren.LeftButtonPressEvt += new vtkObject.vtkObjectEventHandler(iren_LeftButtonPressEvt);
         }
-
         public void InitView()
         {
             SetCamera(0, -1, 0, 0, 0, 1);
             cam.Yaw(15);
             cam.Pitch(-15);
-            Ren.ResetCamera(); 
+            Ren.ResetCamera();
         }
-
         public void Render()
         {
             RenWin.Render();
         }
-
-
         public void SetCamera(float x, float y, float z, float vx, float vy, float vz)
         {
             cam.SetFocalPoint(0.0, 0.0, 0.0);
@@ -234,19 +175,17 @@ namespace Nuwa.xClass
             Ren.ResetCamera();
             RenWin.Render();
         }
-
         public void ResetSetCamera(double[] b, bool isOffset)
         {
             if (isOffset)
             {
                 double offset = 0.02;
-                double l =  (b[1]-b[0])*offset;double w=  (b[3]-b[2])*offset;double h =  (b[5]-b[4])*offset;
+                double l = (b[1] - b[0]) * offset; double w = (b[3] - b[2]) * offset; double h = (b[5] - b[4]) * offset;
                 Ren.ResetCamera(b[0] - l, b[1] + l, b[2] - w, b[3] + w, b[4] - h, b[5] + h);
             }
             else
-                 Ren.ResetCamera(b[0], b[1], b[2], b[3], b[4], b[5]);
+                Ren.ResetCamera(b[0], b[1], b[2], b[3], b[4], b[5]);
         }
-
         public void iren_LeftButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             int[] clickPos = Iren.GetEventPosition();
@@ -254,8 +193,8 @@ namespace Nuwa.xClass
             vtkPropPicker picker = vtkPropPicker.New();
             picker.Pick(clickPos[0], clickPos[1], 0, Ren);
             SelectPickedActor(picker.GetActor());
+            RenWin.Render();
         } // interactor dianxuan 
-
         public void SelectPickedActor(vtkActor pickedActor)
         {
             if (this.LastPickedActor != null)
@@ -266,30 +205,35 @@ namespace Nuwa.xClass
             this.LastPickedActor = pickedActor;
             if (this.LastPickedActor != null)
             {
+                for (int i = 0; i < NumberOfObjects; i++)
+                {
+                    if (pickedActor == this.objects[i].Actor)
+                        this.selectedModuleIndex = i;
+                }
+                MainForm.SelectedModule = this.objects[this.selectedModuleIndex];
+
                 // Save the property of the picked actor so that we can
                 // restore it next time
                 this.LastPickedProperty.DeepCopy(this.LastPickedActor.GetProperty());
                 // Highlight the picked actor by changing its properties
                 this.LastPickedActor.GetProperty().SetEdgeColor(1.0, 0.0, 0.0);
                 this.LastPickedActor.GetProperty().SetEdgeVisibility(1);
-                //this.LastPickedActor.GetProperty().SetDiffuse(10.0);
-                //this.LastPickedActor.GetProperty().SetSpecular(10.0);
-                ResetSetCamera(LastPickedActor.GetBounds(),false);
+                ResetSetCamera(LastPickedActor.GetBounds(), false);
                 AxesUpdate(LastPickedActor.GetBounds());
                 justpicked = true;
             }
             else
             {
+                this.selectedModuleIndex = -1;
+                MainForm.SelectedModule = null;
                 if (justpicked)
-                { 
+                {
                     AxesUpdate(boundsDefault);
                     ResetSetCamera(lastbounds, true);
                     justpicked = false;
                 }
-
             }
-            
-            RenWin.Render();
+
 
         }
 
@@ -303,17 +247,20 @@ namespace Nuwa.xClass
             UpdateBounds();
         }//  添加3D物体的方法
 
-        public void DelObject(int index)
+        public void RemoveObject(int index)
         {
+            if (index == -1) 
+               return;
             if (index < this.objects.Count)
             {
                 Ren.RemoveActor(objects[index].Actor);
                 this.objects.RemoveAt(index);
                 UpdateBounds();
             }
+            Render();
         }// 从列表中删除3D物体的方法
 
-        public void DelAllObjects()
+        public void RemoveAllObjects()
         {
             if (objects.Count > 0)
             {
@@ -333,7 +280,6 @@ namespace Nuwa.xClass
             else
                 return null;
         }//  返回列表中的第i个3D物体
-
 
         public string SplitPathForName(string path)
         {
@@ -359,7 +305,7 @@ namespace Nuwa.xClass
 
             xModule object_ = new xModule();
             // Set module name by file name
-            object_.Name = SplitPathForName(filename_);
+            object_.ID= NumberOfObjects;
             object_.PolyData = stlReader.GetOutput();
             object_.Update();
             return object_;
@@ -374,29 +320,10 @@ namespace Nuwa.xClass
 
             xModule object_ = new xModule();
             // Set module name by file name
-            object_.Name = SplitPathForName(filename_);
+            object_.ID = NumberOfObjects;
             object_.PolyData = PLYReader.GetOutput();
             object_.Update();
             return object_;
-        }
-
-        public xModule GetLastObject()
-        {
-            if (this.objects.Count >= 1)
-                return this.objects[this.objects.Count - 1];
-            else
-                return null;
-        }
-
-        public void DelLastObject()
-        {
-            if (NumberOfObjects >= 1)
-            {
-                int index = NumberOfObjects - 1;
-                Ren.RemoveActor(objects[index].Actor);
-                DelObject(index);
-                UpdateBounds();
-            }
         }
 
         public void UpdateBounds()
@@ -419,36 +346,8 @@ namespace Nuwa.xClass
                     bounds[2 * j + 1] = bounds[2 * j + 1] > mb[2 * j + 1] ? bounds[2 * j + 1] : mb[2 * j + 1];
                 }
             }
-
-            center[0] = Bounds[0] + Width / 2;
-            center[1] = Bounds[2] + Height / 2;
-            center[2] = Bounds[4] + Depth / 2;
-            Path.Bounds = Bounds;
+            xPath.Bounds = Bounds;
         }
-
-        public int GetActorIndex(vtkActor actor)
-        {
-            int result = -1;
-            if (NumberOfObjects == 0)
-                return result;
-            //double[] bounds = actor.GetBounds(); 
-            for (int i = 0; i < NumberOfObjects; i++)
-            {
-                if (this.objects[i].Actor == actor)
-                    result = i;
-            }
-
-            if (result == -1)
-            {
-                for (int i = 0; i < NumberOfSlices; i++)
-                {
-                    if (this.slices[i].Actor == actor)
-                        result = i;
-                }
-            }
-
-            return result;
-        } // 利用 vtt interactor 得到
 
         #endregion Object
 
@@ -460,7 +359,7 @@ namespace Nuwa.xClass
             Ren.AddActor(slice_.Actor);
         }
 
-        public void DelSlice(int index)
+        public void RemoveSlice(int index)
         {
             if (index < this.slices.Count)
             {
@@ -469,7 +368,7 @@ namespace Nuwa.xClass
             }
         }
 
-        public void DelAllSlices()
+        public void RemoveAllSlices()
         {
             if (this.slices.Count > 0)
             {
@@ -478,24 +377,6 @@ namespace Nuwa.xClass
                     Ren.RemoveActor(this.slices[i].Actor);
                 }
                 this.slices.RemoveRange(0, this.slices.Count);
-            }
-        }
-
-        public xModule2 GetLastSlice()
-        {
-            if (this.slices.Count > 0)
-                return this.slices[this.slices.Count - 1];
-            else
-                return null;
-        }
-
-        public void DelLastSlice()
-        {
-            if (this.slices.Count >= 1)
-            {
-                int index = this.slices.Count - 1;
-                Ren.RemoveActor(this.slices[index].Actor);
-                DelSlice(index);
             }
         }
 
@@ -513,38 +394,97 @@ namespace Nuwa.xClass
 
         public void CreateToolPathActor()
         {
-            vtkPoints points = vtkPoints.New();
-            List<vtkIdList> ids = new List<vtkIdList>();
-            int pointNum = 0;  
-             for (int i = 0; i < this.NumberOfLayers; i++)
+            xModule2 polygon = new xModule2();
+            for (int i = 0; i < this.NumberOfLayers; i++)
             {
-                xLayer Layer = Path.Layers[i];
-                double z = Layer.Z;
-               for (int j = 0; j < Layer.NumberOfToolPaths; j++)
-               {
-                    //if (j >= Layer.NumberOfToolPaths)
-                   //    break;
+                xLayer Layer = xPath.Layers[i];  double z = Layer.Z;
+
+                for (int j = 0; j < Layer.NumberOfToolPaths; j++)
+                {
                     xToolPath toolPath = Layer.GetToolPathAt(j);
                     for (int k = 0; k < toolPath.Paths.Count; k++)
                     {
-                        vtkIdList id = vtkIdList.New();  
+                        polygon.AddLine();
                         xLoop polyline = toolPath.Paths[k];
                         for (int m = 0; m < polyline.NumberOfPoints; m++)
                         {
                             xPoint2 pt = polyline.GetPointAt(m);
-                            points.InsertNextPoint(pt.X, pt.Y, z);  
-                            id.InsertNextId( pointNum);  
-                            pointNum++;  
+                            polygon.AddPoint(pt, z);
                         } // for m
-                        ids.Add( id );  
+                        
                     } // for k
                 } // for j
             } // for i
-             xModule2 polygon = slices[0];
-             polygon.SetInput(ids, points);
-             polygon.Update();
-             Ren.AddActor(polygon.Actor);  
+            polygon.Update();
+            Ren.AddActor(polygon.Actor);
+            Render();
         }
+
+        public void CreateSamplePathActor()
+        {
+            if (NumberOfSlices == 1)
+            {
+                RemoveSlice(NumberOfSlices - 1);
+            }
+            xModule2 polygon = new xModule2();
+            AddSlice(polygon);
+            for (int i = 0; i < xSample.Path.Count; i++)
+            {
+                polygon.AddLine();
+                List<xSegment2> Layer = xSample.Path[i];
+                double z = Config.FirstLayerHeight + Config.LineHeight * i;
+                for (int j = 0; j < Layer.Count; j++)
+                 {
+                     xSegment2 line = Layer[j];
+                    if (line.Type == SegmentType.Line)
+                    {
+                        xPoint2 pt = line.EndPoint;
+                        polygon.AddPoint(pt, z);
+                    }
+                    else
+                    {
+                        List<xPoint2> pts = line.GetArcPoints();
+                       polygon.AddPoints(pts,z);
+                    }
+
+                  } // for m
+
+            } // for i
+            //polygon.SetInput(ids, points);
+            polygon.Update();
+            polygon.SetColor(Color.Blue);
+            Ren.AddActor(polygon.Actor);
+            Render();
+        }
+
+        public void CreateToolPathActor_GCode()
+        {
+            try
+            {
+                vtkPoints points = vtkPoints.New();
+                List<vtkIdList> ids = new List<vtkIdList>();
+                int pointNum = 0;
+                vtkIdList id = vtkIdList.New();
+                for (int i = 0; i < xGCode.Path.Count; i++)
+                {
+                    xPoint3 pt = xGCode.Path[i].EndPoint;
+                    points.InsertNextPoint(pt.X, pt.Y, pt.Z);
+                    id.InsertNextId(pointNum);
+                    pointNum++;
+                } // for m
+                ids.Add(id);
+                xModule2 polygon = new xModule2();
+                //polygon.SetInput(ids, points);
+                polygon.Update();
+                Ren.AddActor(polygon.Actor);
+                Render();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+            }
+        }
+
 
         //public void BrowseToolPathActorAt(int value)
         //{
@@ -572,10 +512,10 @@ namespace Nuwa.xClass
 
         #region Box ； Axes； Pen等辅助 Module的操作
 
-        public void  CreatePlateActor()
+        public void CreatePlateActor()
         {
             vtkPNGReader pngReader = vtkPNGReader.New();
-            pngReader.SetFileName("..\\Resources\\cb.png);//读入纹理图
+            pngReader.SetFileName("..\\..\\Resources\\cb.png");
             vtkTexture texture = vtkTexture.New();
             texture.SetInputConnection(pngReader.GetOutputPort());
             texture.InterpolateOn();
@@ -584,7 +524,7 @@ namespace Nuwa.xClass
             plane1.SetOrigin(0, 0, 0);
             plane1.SetPoint1(250, 0, 0);
             plane1.SetPoint2(0, 200, 0);
-            this.plate.PolyData=plane1.GetOutput();
+            this.plate.PolyData = plane1.GetOutput();
             this.plate.Update();
             this.plate.Actor.SetTexture(texture);
             Ren.AddActor(this.plate.Actor);
@@ -596,7 +536,7 @@ namespace Nuwa.xClass
             this.pen.Actor.SetPosition(x, y, z);
             Render();
         }
-
+           
         public void ShowPen(bool show)
         {
             if (show)
@@ -629,8 +569,8 @@ namespace Nuwa.xClass
             this.axes.SetYTitle("Y"); //this.axes.SetYUnits("mm");
             this.axes.SetZTitle("Z"); //this.axes.SetZUnits("mm");
             this.axes.SetUseBounds(true);
-            this.axes.SetBounds(0,250,0,200,0,100);
-            this.axes.SetXAxisTickVisibility(1); this.axes.SetYAxisTickVisibility(1); this.axes.SetZAxisTickVisibility(1);
+            this.axes.SetBounds(0, 250, 0, 200, 0, 100);
+            this.axes.SetXAxisTickVisibility(0); this.axes.SetYAxisTickVisibility(0); this.axes.SetZAxisTickVisibility(0);
             this.axes.GetProperty().SetColor(0.7, 0.7, 0.9);
             this.axes.PickableOff();
             Ren.AddActor(axes);

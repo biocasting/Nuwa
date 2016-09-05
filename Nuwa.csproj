@@ -11,6 +11,21 @@
     <AssemblyName>Nuwa</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <PublishUrl>发布\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -78,10 +93,6 @@
     <Reference Include="CSkin">
       <HintPath>Dll\CSkin.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.Galil">
-      <HintPath>Dll\Interop.Galil.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="Kitware.mummy.Runtime">
       <HintPath>C:\ActiViz\bin\Kitware.mummy.Runtime.dll</HintPath>
     </Reference>
@@ -100,15 +111,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConfigForm.cs" />
-    <Compile Include="ConfigForm.Designer.cs" />
+    <Compile Include="GalilControl.cs" />
+    <Compile Include="SettingBasicFormcs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingBasicFormcs.Designer.cs">
+      <DependentUpon>SettingBasicFormcs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfigForm.Designer.cs">
+      <DependentUpon>ConfigForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="cTextIO.cs" />
     <Compile Include="cXmlIO.cs" />
+    <Compile Include="ControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ControlForm.Designer.cs">
+      <DependentUpon>ControlForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectTrasnformForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ObjectTrasnformForm.Designer.cs">
+      <DependentUpon>ObjectTrasnformForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Path2DViewForm.cs">
       <SubType>Form</SubType>
@@ -118,35 +152,88 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Property.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="SampleCubeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SampleCubeForm.Designer.cs">
+      <DependentUpon>SampleCubeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SampleSquareCrucibleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SampleSquareCrucibleForm.Designer.cs">
+      <DependentUpon>SampleSquareCrucibleForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SampleRoundCrucibleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SampleRoundCrucibleForm.Designer.cs">
+      <DependentUpon>SampleRoundCrucibleForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SampleCylinderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SampleCylinderForm.Designer.cs">
+      <DependentUpon>SampleCylinderForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="xClass\xSamples.cs" />
     <Compile Include="xClass\xBoundry.cs" />
+    <Compile Include="xClass\xGCode.cs" />
     <Compile Include="xClass\xLayer.cs" />
     <Compile Include="xClass\xLoop.cs" />
-    <Compile Include="Path.cs" />
+    <Compile Include="xClass\xPath.cs" />
     <Compile Include="xClass\xModule2.cs" />
+    <Compile Include="xClass\xPoin3.cs" />
     <Compile Include="xClass\xPoint2.cs" />
     <Compile Include="xClass\xPolygon.cs" />
     <Compile Include="xClass\xPolynode.cs" />
+    <Compile Include="xClass\xSegment2.cs" />
     <Compile Include="xClass\xToolPath.cs" />
     <Compile Include="xClass\xUnion.cs" />
     <Compile Include="xClass\xModule.cs" />
+    <Compile Include="xClass\xSegment3.cs" />
+    <EmbeddedResource Include="SettingBasicFormcs.resx">
+      <DependentUpon>SettingBasicFormcs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConfigForm.resx">
+      <DependentUpon>ConfigForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ControlForm.resx">
+      <DependentUpon>ControlForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ObjectTrasnformForm.resx">
+      <DependentUpon>ObjectTrasnformForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Path2DViewForm.resx">
       <DependentUpon>Path2DViewForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
+    <EmbeddedResource Include="SampleCubeForm.resx">
+      <DependentUpon>SampleCubeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SampleSquareCrucibleForm.resx">
+      <DependentUpon>SampleSquareCrucibleForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SampleRoundCrucibleForm.resx">
+      <DependentUpon>SampleRoundCrucibleForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SampleCylinderForm.resx">
+      <DependentUpon>SampleCylinderForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -201,6 +288,109 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\iconClose.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pathadd.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Connect.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\beginbuild.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pausebuild.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\stopbuild.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\colorbrush.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tube.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\checkOK.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\closecancel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\printersetting.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\printsetting.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\path.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\colorred.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\colorblue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\coloryellow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\colorgreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cylinder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\squre.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AN-Washer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Samplecube.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Galil">
+      <Guid>{30A08063-D424-4206-9631-AE91CF80C678}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>5</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Connected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NotConnected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\speed1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\speed2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\speed3.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

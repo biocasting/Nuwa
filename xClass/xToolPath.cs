@@ -9,76 +9,28 @@ namespace Nuwa.xClass
     using Polygons = List<List<IntPoint>>;
     using Loops = List<xLoop>;
     using ToolPaths = List<xToolPath>;
+    using PolyNodes = List<xPolynode>;
 
-    /// <summary>
-    /// xPolygons的列表, 第一个是outer boundary,  xToolPaths -- xPolygon -- xPoint2D
-    /// </summary>
     public class xToolPath
     {
 
         #region 成员
         public Loops Borders;
         public Loops Paths;
+
+        // 生成toolpath的辅助变量
         private Polygons subjects = new Polygons();
         private Polygons solution = new Polygons();
         public int Material;
-        private double scale1 = 10000; 
+        private double scale1 = 1000; 
         #endregion
 
         #region 属性
 
-        public xPolygon Polygon
-        {
-            get
-            {
-                return SimplePolygon();
-            }
-        }
-
-        private xPolygon SimplePolygon()
-        {
-            MakeCorrectWindings();
-            if (Borders.Count == 0)
-                throw new Exception("No polygon found");
-            else if (Borders.Count == 1)
-                return new xPolygon(Borders[0].ToArray());
-            else
-            {
-                this.Borders.Sort((Comparison<xLoop>)delegate(xLoop a, xLoop b) { return a.MaxY < b.MaxY ? 1 : a.MaxY == b.MaxY ? 0 : -1; });
-                xPolygon returnPoly = new xPolygon(Borders[0].ToArray());
-                for (int i = 1; i < this.Borders.Count; i++)
-                {
-                    xPolygon spoly = CombinePolygons(returnPoly, new xPolygon(Borders[i].ToArray()));
-                    returnPoly = spoly;
-                }
-                return returnPoly;
-            }
-        }
-
-        public int NumberOfPolylines
-        {
-            get { return this.Borders.Count; }
-
-        }
-
-        public int TotalVertices
-        {
-            get
-            {
-                int vt = 0;
-                for (int i = 0; i < Borders.Count; i++)
-                    vt += (Borders[i]).NumberOfPoints;
-                return vt;
-            }
-        }
-
         #endregion
 
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name=""></param>
-        /// <returns></returns>
+        #region 构造函数
+
         public xToolPath()
         {
             Paths = new Loops();
@@ -86,15 +38,9 @@ namespace Nuwa.xClass
             Material = 0;
         }
 
-        public void Rearange(int option)
-        {
-            foreach (xLoop line in this.Borders)
-            {
-                line.InitIndexPoints();
-                line.Rearrange(option);
-            }
-        }
+        #endregion
 
+        #region Clipper
         private xLoop PolygonToLoop(Polygon pg, double scale)
         {
             xLoop result =new xLoop();
@@ -119,6 +65,75 @@ namespace Nuwa.xClass
             IntPoint pt0 = new IntPoint(Convert.ToInt64(lp.GetPointAt(0).X * scale), Convert.ToInt64(lp.GetPointAt(0).Y * scale));
             result.Add(pt0);
             return result;
+        }
+
+        public Loops GetLoopsbyOffset(double offset)
+        {
+            MakeCorrectWindings();
+            foreach (xLoop pl in Borders)
+            {
+                Polygon pg = LoopToPolygon(pl, scale1);
+                if (pg.Count > 2)
+                    subjects.Add(pg);
+            }
+
+            Loops result = new Loops();
+            if (offset != 0)
+            {
+                ClipperOffset co = new ClipperOffset();
+                co.AddPaths(subjects, JoinType.jtRound, EndType.etClosedPolygon);
+                co.Execute(ref solution, (double)offset * scale1);
+            }
+
+            foreach (Polygon pg in solution)
+            {
+                xLoop pts = PolygonToLoop(pg, scale1);
+                if (pts.NumberOfPoints > 2)
+                    result.Add(pts);
+            }
+            return result;
+        }
+
+        public void SetSubject()
+        {
+            //MakeCorrectWindings();
+            foreach (xLoop pl in Borders)
+            {
+                Polygon pg = LoopToPolygon(pl, scale1);
+                if (pg.Count > 2)
+                    subjects.Add(pg);
+                //pts = null;
+            }
+        }
+
+        public Loops GetLoops(double offset)
+        {
+            Loops result = new Loops();
+            if (offset != 0)
+            {
+                ClipperOffset co = new ClipperOffset();
+                co.AddPaths(subjects, JoinType.jtRound, EndType.etClosedPolygon);
+                co.Execute(ref solution, (double)offset * scale1*-1);
+            }
+
+            foreach (Polygon pg in solution)
+            {
+                xLoop pts = PolygonToLoop(pg, scale1);
+                if (pts.NumberOfPoints > 2)
+                    result.Add(pts);
+            }
+            return result;
+        }
+
+        #endregion
+
+        public void Rearange(int option)
+        {
+            foreach (xLoop line in this.Borders)
+            {
+                line.InitIndexPoints();
+                line.Rearrange(option);
+            }
         }
 
         public ToolPaths GetTooPathsbyOffset(double offset)
@@ -151,67 +166,6 @@ namespace Nuwa.xClass
                 } // end for i
             }   // end for j
             return tps;
-        }
-
-        public  Loops GetLoopsbyOffset(double offset)
-        {
-            //MakeCorrectWindings();
-            foreach (xLoop pl in Borders)
-            {
-                Polygon pg= LoopToPolygon(pl, scale1);
-                if (pg.Count > 2)
-                    subjects.Add(pg);
-                //pts = null;
-            }
-
-                Loops result = new Loops();
-                if (offset != 0)
-                {
-                  ClipperOffset co = new ClipperOffset();
-                  co.AddPaths(subjects, JoinType.jtRound, EndType.etClosedPolygon);
-                  co.Execute(ref solution, (double)offset * scale1);
-                }
-
-                foreach (Polygon pg in solution)
-                {
-                    xLoop pts = PolygonToLoop(pg, scale1);
-                    if (pts.NumberOfPoints > 2)
-                        result.Add(pts);
-                    //pts = null;
-                }
-                return result;
-        }
-
-        public void SetSubject()
-        {
-            //MakeCorrectWindings();
-            foreach (xLoop pl in Borders)
-            {
-                Polygon pg = LoopToPolygon(pl, scale1);
-                if (pg.Count > 2)
-                    subjects.Add(pg);
-                //pts = null;
-            }
-        }
-
-        public Loops GetLoops(double offset)
-        {
-            Loops result = new Loops();
-            if (offset != 0)
-            {
-                ClipperOffset co = new ClipperOffset();
-                co.AddPaths(subjects, JoinType.jtRound, EndType.etClosedPolygon);
-                co.Execute(ref solution, (double)offset * scale1*-1);
-            }
-
-            foreach (Polygon pg in solution)
-            {
-                xLoop pts = PolygonToLoop(pg, scale1);
-                if (pts.NumberOfPoints > 2)
-                    result.Add(pts);
-                //pts = null;
-            }
-            return result;
         }
 
         #region RasterPaths
@@ -377,22 +331,23 @@ namespace Nuwa.xClass
             return finalList;
         }
 
-        public List<xPolynode> RasterFill(double offset, xVector2D xDirection)
+        // Polylinelist 是Polyline, currentList是 Polynode, Final list 是 List<Polyline>, sublist是 Polynode  List,RasterFill 是 List < Polynode >
+        public PolyNodes RasterFill(double offset, xVector2D xDirection)
         {
             xToolPath poly = new xToolPath();
             xTransform tran = new xTransform(new xPoint2(0.0, 0.0), xDirection);
             for (int i = 0; i < Borders.Count; i++)
             {
                 xLoop sublist = Borders[i];
-                ArrayList looplist = new ArrayList();
+                xLoop looplist = new xLoop();
                 for (int j = 0; j < sublist.NumberOfPoints; j++)
                 {
-                    looplist.Add(tran.To(sublist.GetPointAt(j)));
+                    looplist.AddPoint(tran.To(sublist.GetPointAt(j)));
                 }
-                poly.Add(looplist);
+                poly.Add(looplist.ToArray());
             }
 
-            List<xPolynode> list = poly.RasterFill(offset);
+            PolyNodes list = poly.RasterFill(offset);
             for (int i = 0; i < list.Count; i++)
             {
                 for (int j = 0; j < list[i].NumberOfNodes; j++)
@@ -403,14 +358,15 @@ namespace Nuwa.xClass
                 }
             }
             return list;
-        }   // Polylinelist 是Polyline, currentList是 Polynode, Final list 是 List<Polyline>, sublist是 Polynode  List,RasterFill 是 List < Polynode >
+        }   
 
-        public List<xPolynode> RasterFill(double offset)
+
+        public PolyNodes RasterFill(double offset)
         {
             //从顶部创建Nodes
             xPolygon sp = new xPolygon(this.Borders[0].ToArray());
             double minY = sp.LowerCorner.Y, maxY = sp.UpperCorner.Y;
-            List<xPolynode> chainList = new List<xPolynode>();
+            PolyNodes chainList = new PolyNodes();
             // 计算总共扫描线数量n，产生n个Polynode 的列表
             int totalLines = (int)((maxY - minY) / offset);
             for (int i = 0; i < totalLines; i++)
@@ -613,67 +569,7 @@ namespace Nuwa.xClass
 
         # endregion
 
-        # region ContourPaths
-
-        public Loops ContourPath(double firstDepth, double offset)
-        {
-            return this.Polygon.ContourPath(firstDepth, offset);
-        }
-
-        # endregion
-
         # region 类简单方法
-
-        private void updateBound()
-        {
-            double minX = double.MaxValue;
-            double maxX = double.MinValue;
-            double minY = double.MaxValue;
-            double maxY = double.MinValue;
-            for (int i = 0; i < Borders.Count; i++)
-            {
-                xLoop list = Borders[i];
-                for (int j = 0; j < list.NumberOfPoints; j++)
-                {
-                    xPoint2 p = list.GetPointAt(j);
-                    minX = p.X > minX ? minX : p.X;
-                    minY = p.Y > minY ? minY : p.Y;
-                    maxX = p.X > maxX ? p.X : maxX;
-                    maxY = p.Y > maxY ? p.Y : maxY;
-                }
-            }
-        }
-
-        public void Add(params xPolygon[] polys)
-        {
-            for (int i = 0; i < polys.Length; i++)
-            {
-                xLoop polyline = new xLoop();
-                if (Borders.Count == 0)//first polygon, CW, outerline
-                {
-                    if (polys[i].Winding == Winding.CW)
-                    {
-                        polyline.AddPoints(polys[i].Points);
-                    }
-                    else
-                    {
-                        polyline.AddPoints(polys[i].Inverse().Points);
-                    }
-                }
-                else
-                {
-                    if (polys[i].Winding == Winding.CCW)
-                    {
-                        polyline.AddPoints(polys[i].Points);
-                    }
-                    else
-                    {
-                        polyline.AddPoints(polys[i].Inverse().Points);
-                    }
-                }
-                Borders.Add(polyline);
-            }
-        }
 
         public void Add(xPoint2[] points)
         {
@@ -704,11 +600,6 @@ namespace Nuwa.xClass
             this.Borders.Add(polyline);
         }
 
-        public void Add(ArrayList points) //arrayList of points
-        {
-            Add((xPoint2[])points.ToArray(typeof(xPoint2)));
-        }
-
         public void MakeCorrectWindings()
         {
             if (this.Borders.Count > 0)
@@ -730,163 +621,9 @@ namespace Nuwa.xClass
             }
         }
 
-        private xPolygon CombinePolygons(xPolygon outerLoop, xPolygon innerLoop)
-        {
-            //从内环的顶点发一条射线，看看是否与外环相交，相交的话，返回外环交点的index
-            
-            xPoint2 innerTopPoint = innerLoop.Points[innerLoop.IndexOfTop]; // 顶点
-            List<int> UpInterscetion = new List<int>();
-
-            //向上发一条放射性,离放射性最近的点，可以认为是交点
-            for (int i = 0; i < outerLoop.NumberOfPoints; i++)
-            {
-                xPoint2 p0 = outerLoop.Points[i];
-                xPoint2 p1 = outerLoop.Points[(i + 1) % outerLoop.NumberOfPoints];
-                if (p0.Y > innerTopPoint.Y || p1.Y > innerTopPoint.Y)
-                {
-                    if (!((innerTopPoint.X < p0.X && innerTopPoint.X < p1.X) || (innerTopPoint.X > p0.X && innerTopPoint.X > p1.X)))
-                    {
-                        UpInterscetion.Add(i);
-                    }
-                }
-            }
-            // 向下发一条直线
-            //for (int i = 0; i < outerLoop.NumberOfPoints; i++)
-            //{
-            //    xPoint2D p0 = outerLoop.Points[i];
-            //    xPoint2D p1 = outerLoop.Points[(i + 1) % outerLoop.NumberOfPoints];
-            //    if (p0.Y < innerTopPoint.Y || p1.Y < innerTopPoint.Y)
-            //    {
-            //        if (!((innerTopPoint.X < p0.X && innerTopPoint.X < p1.X) || (innerTopPoint.X > p0.X && innerTopPoint.X > p1.X)))
-            //        {
-            //            candidateIndices.Add(i);
-            //        }
-            //    }
-            //}
-
-            //不交，则有问题。 
-            if (UpInterscetion.Count == 0)
-                throw new Exception("Algorithm wrong on making a complex polygon simple");
-            Console.WriteLine("交点数目 {0}  1: {1}   点: X{2}，Y{3} ", UpInterscetion.Count, UpInterscetion[0], outerLoop.Points[UpInterscetion[0]].X, outerLoop.Points[UpInterscetion[0]].Y);
-
-            // 获得第一个交点，
-            int intersectionIndex = UpInterscetion[0];
-            bool addsplit = false;
-            xPoint2 OuterStartPoint = outerLoop.Points[intersectionIndex]; // 放射性左面的点
-            xPoint2 OuterEndPoint = outerLoop.Points[(intersectionIndex + 1) % outerLoop.NumberOfPoints]; // 放射性右面的点
-            double MiddleX= innerTopPoint.X;
-            double MiddleY = (innerTopPoint.X - OuterStartPoint.X) / (OuterEndPoint.X - OuterStartPoint.X) * (OuterEndPoint.Y - OuterStartPoint.Y) + OuterStartPoint.Y;
-            xPoint2 outerMiddlePoint = new xPoint2(MiddleX, MiddleY);// 两个点的中点
-
-            #region  获取交点的Y值
-
-            double y;
-            // 如果两点X相同，证明平行于Y轴，可能在边线上
-            if (OuterStartPoint.X == OuterEndPoint.X)
-            {
-                // Y选下面那个点
-                if (OuterStartPoint.Y > OuterEndPoint.Y)
-                    y = OuterEndPoint.Y;
-                else
-                    y = OuterStartPoint.Y;
-            }
-            else
-            {
-                // Y为交点。
-                y = (innerTopPoint.X - OuterStartPoint.X) * (OuterEndPoint.Y - OuterStartPoint.Y) / (OuterEndPoint.X - OuterStartPoint.X) + OuterStartPoint.Y;
-            }
-
-            // 获得其他交点的Y坐标，与前面比较，获得最小的Y值
-            for (int i = 1; i < UpInterscetion.Count; i++)
-            {
-                int index = UpInterscetion[i];
-                int indexN = (index + 1) % outerLoop.NumberOfPoints;
-
-                xPoint2 OuterStartPoint1 = outerLoop.Points[index];
-                xPoint2 OuterEndPoint1 = outerLoop.Points[indexN];
-                double y1;
-                if (OuterStartPoint1.X == OuterEndPoint1.X)
-                {
-                    if (OuterStartPoint1.Y > OuterEndPoint1.Y) y1 = OuterEndPoint.Y;
-                    else y1 = OuterStartPoint1.Y;
-                }
-                else
-                {
-                    y1 = (innerTopPoint.X - OuterStartPoint.X) * (OuterEndPoint1.Y - OuterStartPoint.Y) / (OuterEndPoint1.X - OuterStartPoint1.X) + OuterStartPoint1.Y;
-                }
-                if (y1 < y)
-                {
-                    intersectionIndex = UpInterscetion[i];
-                    y = y1;
-                }
-            }
-            # endregion
-
-            //get solution alread here, three cases: solution on start end of the line, on end of the line, or intersection
-            List<xPoint2> list = new List<xPoint2>();
-            // 交点在起点
-            if (OuterStartPoint.X == innerTopPoint.X && OuterStartPoint.Y == y)
-            {
-                //落在起点，不要更改
-            }
-            // 交点在终点
-            else if (OuterEndPoint.X == innerTopPoint.X && OuterEndPoint.Y == y)
-            {
-                intersectionIndex = (intersectionIndex + 1) % outerLoop.NumberOfPoints;
-            }
-            // 交点在交叉点
-            else
-            {
-                intersectionIndex = (intersectionIndex + 1) % outerLoop.NumberOfPoints;
-                addsplit = true;
-            }
-
-            // 将所有的点串起来  外环交点中点-->外环终点-->外环起点-->外环交叉点-->外环交点中点--->内环顶点--->内环终点--->内环起点--->内环顶点-
-            if (addsplit)
-                list.Add(outerMiddlePoint);
-            for (int i = intersectionIndex; i < outerLoop.NumberOfPoints; i++)
-            {
-                list.Add(outerLoop.Points[i]);
-            }
-            for (int i = 0; i < intersectionIndex; i++)
-            {
-                list.Add(outerLoop.Points[i]);
-            }
-            if (addsplit)
-                list.Add(outerMiddlePoint);
-            for (int i = innerLoop.IndexOfTop; i < innerLoop.NumberOfPoints; i++)
-            {
-                list.Add(innerLoop.Points[i]);
-            }
-            for (int i = 0; i <= innerLoop.IndexOfTop; i++)
-            {
-                list.Add(innerLoop.Points[i]);
-            }
-
-            Console.Write("Split 1 : X {0} Y {1} \n", outerMiddlePoint.X, outerMiddlePoint.Y);
-            Console.Write("Solution : X {0} Y {1} \n", outerLoop.Points[intersectionIndex].X, outerLoop.Points[intersectionIndex].Y);
-
-            return new xPolygon(list.ToArray());
-        }
-
         # endregion
 
     }//end class
 
-    ////Top-down search for intersections, start from 
-    //public class NodeComparer : IComparer
-    //{
-    //    public int Compare(Node a, Node b)
-    //    {
-    //        if (a.X > b.X)
-    //            return 1;
-    //        else if (a.X < b.X)
-    //            return -1;
-    //        else
-    //        {
-    //            return 0;
-    //        }
-    //    }
-    //}
 
 }

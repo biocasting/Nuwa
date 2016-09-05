@@ -12,7 +12,7 @@ using System.IO;
 
 namespace Nuwa
 {
-    public partial class ConfigForm : CCSkinMain
+    public partial class ConfigForm : Form
     {
         public ConfigForm()
         {

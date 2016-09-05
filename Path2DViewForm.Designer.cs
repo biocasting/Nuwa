@@ -29,17 +29,17 @@
         private void InitializeComponent()
         {
             this.trackBarLayer = new CCWin.SkinControl.SkinTrackBar();
-            this.picBoxPath = new System.Windows.Forms.PictureBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.labelX = new System.Windows.Forms.Label();
             this.labelY = new System.Windows.Forms.Label();
             this.labelZ = new System.Windows.Forms.Label();
             this.labelS = new System.Windows.Forms.Label();
             this.labelLayerNumber = new System.Windows.Forms.Label();
+            this.picBoxPath = new System.Windows.Forms.PictureBox();
+            this.buttonFrmHide = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarLayer)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picBoxPath)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picBoxPath)).BeginInit();
             this.SuspendLayout();
             // 
             // trackBarLayer
@@ -47,40 +47,13 @@
             this.trackBarLayer.BackColor = System.Drawing.Color.Transparent;
             this.trackBarLayer.Bar = null;
             this.trackBarLayer.BarStyle = CCWin.SkinControl.HSLTrackBarStyle.Opacity;
-            this.trackBarLayer.Location = new System.Drawing.Point(946, 139);
+            this.trackBarLayer.Location = new System.Drawing.Point(863, 139);
             this.trackBarLayer.Name = "trackBarLayer";
             this.trackBarLayer.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.trackBarLayer.Size = new System.Drawing.Size(45, 395);
             this.trackBarLayer.TabIndex = 2;
             this.trackBarLayer.Track = null;
             this.trackBarLayer.Scroll += new System.EventHandler(this.trackBarLayer_Scroll);
-            // 
-            // picBoxPath
-            // 
-            this.picBoxPath.BackColor = System.Drawing.Color.DimGray;
-            this.picBoxPath.Location = new System.Drawing.Point(29, 57);
-            this.picBoxPath.Name = "picBoxPath";
-            this.picBoxPath.Size = new System.Drawing.Size(911, 477);
-            this.picBoxPath.TabIndex = 1;
-            this.picBoxPath.TabStop = false;
-            this.picBoxPath.SizeChanged += new System.EventHandler(this.picBoxPath_SizeChanged);
-            this.picBoxPath.Paint += new System.Windows.Forms.PaintEventHandler(this.picBoxPath_Paint);
-            this.picBoxPath.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseDown);
-            this.picBoxPath.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseMove);
-            this.picBoxPath.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseUp);
-            this.picBoxPath.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseWheel);
-            // 
-            // button1
-            // 
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.ForeColor = System.Drawing.Color.DarkGray;
-            this.button1.Image = global::Nuwa.Properties.Resources.iconClose;
-            this.button1.Location = new System.Drawing.Point(936, 0);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(71, 54);
-            this.button1.TabIndex = 0;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // tableLayoutPanel1
             // 
@@ -154,33 +127,60 @@
             this.labelLayerNumber.AutoSize = true;
             this.labelLayerNumber.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.labelLayerNumber.ForeColor = System.Drawing.Color.White;
-            this.labelLayerNumber.Location = new System.Drawing.Point(953, 73);
+            this.labelLayerNumber.Location = new System.Drawing.Point(870, 74);
             this.labelLayerNumber.Name = "labelLayerNumber";
             this.labelLayerNumber.Size = new System.Drawing.Size(38, 22);
             this.labelLayerNumber.TabIndex = 19;
             this.labelLayerNumber.Text = "1/1";
+            // 
+            // picBoxPath
+            // 
+            this.picBoxPath.BackColor = System.Drawing.Color.DimGray;
+            this.picBoxPath.Location = new System.Drawing.Point(29, 57);
+            this.picBoxPath.Name = "picBoxPath";
+            this.picBoxPath.Size = new System.Drawing.Size(796, 477);
+            this.picBoxPath.TabIndex = 1;
+            this.picBoxPath.TabStop = false;
+            this.picBoxPath.SizeChanged += new System.EventHandler(this.picBoxPath_SizeChanged);
+            this.picBoxPath.Paint += new System.Windows.Forms.PaintEventHandler(this.picBoxPath_Paint);
+            this.picBoxPath.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseDown);
+            this.picBoxPath.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseMove);
+            this.picBoxPath.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseUp);
+            this.picBoxPath.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.picBoxPath_MouseWheel);
+            // 
+            // buttonFrmHide
+            // 
+            this.buttonFrmHide.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonFrmHide.ForeColor = System.Drawing.Color.DimGray;
+            this.buttonFrmHide.Image = global::Nuwa.Properties.Resources.iconClose;
+            this.buttonFrmHide.Location = new System.Drawing.Point(853, 9);
+            this.buttonFrmHide.Name = "buttonFrmHide";
+            this.buttonFrmHide.Size = new System.Drawing.Size(71, 54);
+            this.buttonFrmHide.TabIndex = 20;
+            this.buttonFrmHide.UseVisualStyleBackColor = false;
+            this.buttonFrmHide.Click += new System.EventHandler(this.buttonFrmHide_Click);
             // 
             // Path2DViewForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DimGray;
-            this.ClientSize = new System.Drawing.Size(1010, 554);
+            this.ClientSize = new System.Drawing.Size(936, 554);
+            this.Controls.Add(this.buttonFrmHide);
             this.Controls.Add(this.labelLayerNumber);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.trackBarLayer);
             this.Controls.Add(this.picBoxPath);
-            this.Controls.Add(this.button1);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Path2DViewForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Path2DViewForm";
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this.trackBarLayer)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picBoxPath)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picBoxPath)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -188,7 +188,6 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.PictureBox picBoxPath;
         private CCWin.SkinControl.SkinTrackBar trackBarLayer;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
@@ -197,5 +196,6 @@
         private System.Windows.Forms.Label labelZ;
         private System.Windows.Forms.Label labelS;
         private System.Windows.Forms.Label labelLayerNumber;
+        private System.Windows.Forms.Button buttonFrmHide;
     }
 }

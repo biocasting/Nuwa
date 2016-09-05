@@ -32,25 +32,21 @@ namespace Nuwa
             InitializeComponent();
             main = (MainForm)this.Parent;
         }
-
         public int ScrollMax
         {
             get { return this.trackBarLayer.Maximum; }
             set { this.trackBarLayer.Maximum = value; }
         }
-
         public int NumberOfLayers
         {
-            get { return Path.Layers.Count; }
+            get { return xPath.Layers.Count; }
         }
 
         public int ScrollNumber
         {
             get { return trackBarLayer.Value; }
         }
-
-
-        # region TabPage1 -  TabPage 12 -  2D绘画实现
+        # region  2D绘画实现
 
         private void statusBarPath_DrawItem(object sender, StatusBarDrawItemEventArgs sbdevent)
         {
@@ -137,11 +133,11 @@ namespace Nuwa
 
         public void CalcSizeOffset()
         {
-            double Width = Path.Bounds[1] - Path.Bounds[0];
-            double Height = Path.Bounds[3] - Path.Bounds[2];
-            double CenterX = Path.Bounds[0] + Width / 2;
-             double CenterY = Path.Bounds[2] + Height / 2;
-            if (Path.Layers == null || Path.Layers.Count == 0)
+            double Width = xPath.Bounds[1] - xPath.Bounds[0];
+            double Height = xPath.Bounds[3] - xPath.Bounds[2];
+            double CenterX = xPath.Bounds[0] + Width / 2;
+             double CenterY = xPath.Bounds[2] + Height / 2;
+            if (xPath.Layers == null || xPath.Layers.Count == 0)
                 return;
             int PicBoxMinDimension = picBoxPath.Width > picBoxPath.Height ? picBoxPath.Height : picBoxPath.Width;
             double AssemblyMaxDimension = Width > Height ? Width : Height;
@@ -154,7 +150,7 @@ namespace Nuwa
         {
             if (NumberOfLayers == 0)
                 return;
-            CurrentLayer = Path.Layers[(trackBarLayer.Value)];
+            CurrentLayer = xPath.Layers[(trackBarLayer.Value)];
             labelZ.Text = "Z= " + CurrentLayer.Z.ToString("f3");
             picBoxPath.Refresh();
             labelLayerNumber.Text= (trackBarLayer.Value + 1).ToString() + "/" + (trackBarLayer.Maximum + 1).ToString();
@@ -166,7 +162,7 @@ namespace Nuwa
                 return;
             CalcSizeOffset();
             trackBarLayer.Maximum = this.NumberOfLayers - 1;
-            CurrentLayer = Path.Layers[trackBarLayer.Value];
+            CurrentLayer = xPath.Layers[trackBarLayer.Value];
             picBoxPath.Focus();
         }  // Paths窗口，传递Layer信息
 
@@ -281,13 +277,12 @@ namespace Nuwa
         }// 不同的材料，不同的颜色
 
         # endregion
-
         public void SetLayer(xLayer layer)
         {
             this.CurrentLayer = layer;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonFrmHide_Click(object sender, EventArgs e)
         {
             this.Visible = !this.Visible;
         }

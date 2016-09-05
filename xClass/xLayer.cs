@@ -5,25 +5,33 @@ using System.Text;
 using System.Threading.Tasks;
 namespace Nuwa.xClass
 {
-
     using Loops = List<xLoop>;
     public class xLayer
     {
-        /// <summary>
-        /// 成员： xToolPath列表，上下角，位置和层厚
-        /// </summary>       
-        private List<xBoundry> boundries;
-        private List<xToolPath> toolPaths;
-        private double layerThickness;
-        private double z;
-        private int id;
 
-        /// <summary>
-        /// 属性： 所有成员的获得
-        /// </summary>
+        #region 成员
+        private List<xBoundry> boundries; 
+        private List<xToolPath> toolPaths;
+        private double layerThickness; 
+        private double z; 
+        private int id; 
+        #endregion
+
+        #region 属性
         public int NumberOfBoundries
         {
             get { return this.boundries.Count;  }
+        }
+
+        public int NumberOfToolPaths
+        {
+            get
+            {
+                if (this.toolPaths == null)
+                    return 0;
+                else
+                    return this.toolPaths.Count;
+            }
         }
 
         public double LayerThickness
@@ -44,10 +52,9 @@ namespace Nuwa.xClass
             set { this.id = value; }
         }
 
-        /// <summary>
-        /// 构建函数
-        /// </summary>
+        #endregion
 
+        #region 构建函数
         public xLayer()
         {
             this.boundries = new List<xBoundry>();
@@ -58,77 +65,31 @@ namespace Nuwa.xClass
             this.id = 0;
         }
 
-        public xLayer(double z)
-		{
-            this.toolPaths = new List<xToolPath>();
-            this.z = z;
-            this.layerThickness = 0.1;
-		}
-
-        public xLayer(double z, double layerThickness)
-		{
-            this.toolPaths = new List<xToolPath>(); 
-			this.z = z;
-			if(layerThickness<0)
-			{
-				layerThickness=0;
-			}
-            this.layerThickness = layerThickness;
-		}
+        # endregion
 
         public void AddBoundry(xBoundry boundry)
         {
             this.boundries.Add(boundry);
         }
-
         public xBoundry GetBoundryAt(int i)
         {
             return this.boundries[i];
         }
-
-        /// <summary>
-        /// 增加一个xToolPath到xToolPath列表
-        /// </summary>
-        public void AddToolPath(xToolPath polygon)
-        {
-            this.toolPaths.Add(polygon);
-        }
-
-        /// <summary>
-        /// 返回xToolPath列表位置为index的polygon
-        /// </summary>
         public xToolPath GetToolPathAt(int i)
         {
             return this.toolPaths[i];
         }
-
-        /// <summary>
-        /// xToolPath列表中的xToolPath总数
-        /// </summary>
-        public int NumberOfToolPaths
-        {
-            get 
-            {
-                if (this.toolPaths==null)
-                    return 0;
-                else
-                return this.toolPaths.Count; 
-            }
-        }
-
-        public void GetToolPathsWithBorders()
+        public void CreateToolPathsWithBordersOnly()
         {
             for (int i = 0; i < this.NumberOfBoundries; i++)   // 遍历各个xToolPath
             {
                 xBoundry boundry = this.GetBoundryAt(i);
                 if (boundry == null)
                     continue;
-                this.toolPaths = boundry.GetToolPathsWithBorders(i);
+                this.toolPaths = boundry.CreateToolPathsWithBordersOnly(i);
             }// end for i
         }
-
-
-        public void FillToolPathsFromBorders(double offset, double firstOffset, int fillPattern)
+        public void FillToolPathsFromBorders(double offset, int fillPattern)
         {
             //each material is this.assembly pen, from pen1 to pen 4
             for (int j = 0; j < NumberOfToolPaths; j++)
@@ -232,7 +193,6 @@ namespace Nuwa.xClass
 
 
         }
-
 
     } // End Class
 } // End NameSpace

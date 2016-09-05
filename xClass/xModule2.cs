@@ -31,12 +31,15 @@ namespace Nuwa.xClass
 
         # region 成员
         private vtkUnstructuredGrid uGrid;
-        private vtkDataSetMapper mapper;
+        private vtkPolyDataMapper mapper;
         private vtkActor actor;
-        private string name;
-
-        private double[] bounds;
-        private int id;
+        private vtkPoints points;
+        private string name="module1";
+        private List<vtkIdList> idLists;
+        private vtkPolyData polydata;
+        private double[] bounds = {0,0,0,0,0,0};
+        private int id=0;
+        private int count=0;
         //private Color color;
         //private int material;
         # endregion
@@ -64,8 +67,6 @@ namespace Nuwa.xClass
         {
             get { return this.actor; }
         }
-
-
         # endregion
 
         /// <summary>
@@ -74,12 +75,13 @@ namespace Nuwa.xClass
         public xModule2()
         {
             this.uGrid = vtkUnstructuredGrid.New();
-            uGrid.Allocate(1, 1);  
-            this.mapper = vtkDataSetMapper.New();
+            this.points = vtkPoints.New();
+            this.idLists = new List<vtkIdList>();
+            uGrid.Allocate(1, 1);
+            this.polydata = vtkPolyData.New();
+            this.mapper = vtkPolyDataMapper.New();
             this.actor = vtkActor.New();
-            this.name = "module1";
             //this.material = 0;
-            this.bounds = new double[6] { 0, 0, 0, 0, 0, 0 };
         }
 
         /// <summary>
@@ -97,25 +99,56 @@ namespace Nuwa.xClass
             this.actor.SetVisibility(i);
         }
 
-        public void SetInput(List<vtkIdList> ids, vtkPoints points)
+
+        public void AddLine()
+        {
+            vtkIdList idlist = new vtkIdList();
+            this.idLists.Add(idlist);
+        }
+
+        public void AddPoint(xPoint2 pt, double z)
+        {
+            vtkIdList idlist = this.idLists[this.idLists.Count - 1];
+            this.points.InsertNextPoint(pt.X, pt.Y, z);
+            idlist.InsertNextId(count);
+            count++;
+        }
+        public void AddPoints(List<xPoint2> pts, double z)
+        {
+            vtkIdList idlist = this.idLists[this.idLists.Count - 1];
+            for (int i= 0; i<pts.Count; i++)
+            { 
+                this.points.InsertNextPoint(pts[i].X, pts[i].Y, z);
+                idlist.InsertNextId(count);
+                count++;
+            }
+        }
+
+        public void SetUpGrid()
         {
             vtkPolyLine aPolyLine = vtkPolyLine.New();
             aPolyLine.GetPointIds().SetNumberOfIds(points.GetNumberOfPoints());
-            for (int i = 0; i < points.GetNumberOfPoints(); i++)
+            for (int i = 0; i < this.points.GetNumberOfPoints(); i++)
             {
                 aPolyLine.GetPointIds().SetId(i, i);
             }
             // Cells, very important  
-            for (int i = 0; i < ids.Count; i++)
+            for (int i = 0; i < this.idLists.Count; i++)
             {
-                vtkIdList id = ids[i];
-                uGrid.InsertNextCell(aPolyLine.GetCellType(), id);
-                id.Dispose();
+                vtkIdList idList = this.idLists[i];
+                uGrid.InsertNextCell(aPolyLine.GetCellType(), idList);
             }
             uGrid.SetPoints(points);  
-  
-
+            vtkGeometryFilter geomFilter = vtkGeometryFilter.New();
+            geomFilter.SetInput(uGrid);
+            //vtkTubeFilter tuber = vtkTubeFilter.New();
+            //tuber.SetInput(geomFilter.GetOutput());
+            // tuber.SetNumberOfSides(6);
+            // tuber.SetRadius(0.1);
+             this.polydata = geomFilter.GetOutput();
         }
+
+
 
         public void SetColor(Color c)
         {
@@ -135,9 +168,11 @@ namespace Nuwa.xClass
         {
             if (this.uGrid == null)
                 return;
+            SetUpGrid();
             this.uGrid.Update();
-            this.mapper.SetInput(this.uGrid);
+            this.mapper.SetInput(this.polydata);
             this.actor.SetMapper(this.mapper);
+            this.actor.PickableOff();
             UpdateBounds();
         } // 联通Pipeline
 

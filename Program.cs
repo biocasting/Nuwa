@@ -16,7 +16,8 @@ namespace Nuwa
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            MainForm mainform = new MainForm();
+            Application.Run(mainform);
         }
     }
 }

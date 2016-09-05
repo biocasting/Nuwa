@@ -14,35 +14,36 @@ namespace Nuwa.xClass
 
     public class xBoundry
     {
+
+        #region 成员
         private Nodes nodes;
-        private xLoopNode prevNode;
         private Loops loops;
-        private Points featurepoints;
+        // 临时变量，储存上一个节点信息
+        private xLoopNode prevNode = new xLoopNode();
+        #endregion 
 
-         public xBoundry()
-        {
-            this.nodes = new List<xLoopNode>();
-            this.prevNode = new xLoopNode();
-            this.loops = new List<xLoop>();       
-            this.featurepoints = new List<xPoint2>();
-        }
-
+        #region 属性
          public int NumberOfNodes
         {
             get { return this.nodes.Count; }
         }// Nodes中所包含的node数量
-
          public int NumberOfLoops
          {
              get { return this.loops.Count; }
          }// Loops中所包含的loop数量
 
-        private xPoint2 GetFeaturePointAt(int i)
-         {
-               return this.GetLoopAt(i).GetPointAt(0);
-         }
+        #endregion
 
-         #region Node
+        #region 构造函数
+        public xBoundry()
+        {
+            this.nodes = new List<xLoopNode>();
+            this.loops = new List<xLoop>();       
+        }
+        #endregion
+
+         #region Node 方法
+
          public xLoopNode GetNodeAt(int i)
         {
              return this.nodes[i];
@@ -106,11 +107,11 @@ namespace Nuwa.xClass
 
         #endregion
 
+        #region Loop 方法
         public void AddLoop(xLoop loop)
         {
                 this.loops.Add(loop);
         }
-
         public void AddLoops(Loops loops)
         {
             foreach (xLoop lp in loops)
@@ -119,12 +120,10 @@ namespace Nuwa.xClass
             }
 
         }
-
         public xLoop GetLoopAt(int i)
         {
             return this.loops[i];
         }// 返回Polyloop中位置为i的loop，注意i不能大于loop总数。
-
         public void MarkOuterLoops()
         {
             int count = this.NumberOfLoops;
@@ -197,7 +196,6 @@ namespace Nuwa.xClass
             }
             loops.Sort((Comparison<xLoop>)delegate(xLoop a, xLoop b) { return a.Id > b.Id ? 1 : a.Id == b.Id ? 0 : -1; });
         }//  判断特征点是否在loop中，如果是，则这个loop是内环。
-
         public void FillLoopsFromNodes()
         {
             SortNodes();
@@ -210,17 +208,25 @@ namespace Nuwa.xClass
                     xLoop loop = new xLoop();
                     AddLoop(loop);
                     thisLoop = loop;
-                    thisLoop.AddPoint(node.X, node.Y);
+                    xPoint2 pt = new xPoint2(node.X, node.Y);
+                    thisLoop.AddPoint(pt);
                 }
                 else
                 {
-                    thisLoop.AddPoint(node.X, node.Y);
+                    xPoint2 pt = new xPoint2(node.X, node.Y);
+                    thisLoop.AddPoint(pt);
                 }
             }
 
         }
+        #endregion
 
-        public ToolPaths GetToolPathsWithBorders( int material)
+        private xPoint2 GetFeaturePointAt(int i)
+         {
+               return this.GetLoopAt(i).GetPointAt(0);
+         }
+
+        public ToolPaths CreateToolPathsWithBordersOnly(int material)
         {
             ToolPaths tps = new ToolPaths();
             xToolPath toolpath = null;
@@ -250,9 +256,6 @@ namespace Nuwa.xClass
 
             return tps;
         }
-
-
-
 
     }   // end xBoundry class
 } // end namespace
